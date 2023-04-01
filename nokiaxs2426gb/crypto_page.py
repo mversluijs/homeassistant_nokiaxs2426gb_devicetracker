@@ -11,7 +11,7 @@ from Crypto.Util.Padding import pad, unpad
 
 import os
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 def base64url_escape(b64):
     out = ""
