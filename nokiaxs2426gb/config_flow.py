@@ -19,6 +19,10 @@ from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
+# from homeassistant.components.device_tracker.const import (
+#     CONF_CONSIDER_HOME,
+#     DEFAULT_CONSIDER_HOME,
+# )
 
 from .const import (
     DOMAIN,
@@ -32,20 +36,22 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
+        vol.Required(CONF_HOST): str,
         vol.Required(CONF_USERNAME): str,
         vol.Required(CONF_PASSWORD): str,
-        vol.Required(CONF_HOST): str,
+        
     }
 )
 
 # TODO options voor consider_home en scaninteval toevoegen: https://github.com/home-assistant/core/pull/50741/commits/70dd8e46c8e73cf1ac5249989962d810d3b5037a
 
 
-class PlaceholderHub:
+class NokiaConfigFlowHandler:
     """placeholder, change name?"""
 
     def __init__(self, host: str) -> None:
         """Initialize."""
+        _LOGGER.debug("Initializing...")
         self.host = host
 
     async def authenticate(self, username: str, password: str) -> bool:
@@ -56,11 +62,11 @@ class PlaceholderHub:
 
         login_nonce_api = '/login_web_app.cgi?nonce'
         login_api = '/login_web_app.cgi'
-        lan_status_api = '/lan_status_web_app.cgi?wlan'
+        # lan_status_api = '/lan_status_web_app.cgi?wlan'
 
         login_nonce_url = base_url+login_nonce_api
         login_url = base_url+login_api
-        lan_status_url = base_url + lan_status_api
+        # lan_status_url = base_url + lan_status_api
         
         login_nonce_payload = "userName=" + CONF_USERNAME
         
@@ -76,12 +82,13 @@ class PlaceholderHub:
         # client = requests.Session()
         async with aiohttp.ClientSession(base_url)as session:
 
-            _LOGGER.debug('GET {}'.format(login_nonce_url))
+            _LOGGER.debug('POST {}'.format(login_nonce_url))
             # get (POST) a one time number (nonce), public key and randomkey
-            response = session.post(login_nonce_url, allow_redirects = False, data = login_nonce_payload, timeout = 10, headers = header)
-            nonce = response.json()['nonce']
-            pubkey = response.json()['pubkey']
-            randomkey = response.json()['randomKey']
+            async with session.post(login_nonce_api, allow_redirects = False, data = login_nonce_payload, timeout = 10, headers = header) as resp:
+                nonce = await resp.json()['nonce']
+                pubkey = await resp.json()['pubkey']
+                randomkey =  await resp.json()['randomKey']
+            
             nohash = '1'
             
             # get the part we want
@@ -91,9 +98,9 @@ class PlaceholderHub:
             enckey = base64url_escape(urlsafe_b64encode(os.urandom(16)).decode('utf-8'))
             enciv = base64url_escape(urlsafe_b64encode(os.urandom(16)).decode('utf-8'))
             
-            g1 =  "userhash=" + CONF_USERNAME
+            g1 =  "userhash=" + self.username
             g1 += "&RandomKeyhash=" + randomkey
-            g1 += "&response=" + urllib.parse.quote(CONF_PASSWORD)
+            g1 += "&response=" + urllib.parse.quote(self.password)
             g1 += "&nonce=" + base64url_escape(nonce)
             g1 += "&enckey=" + enckey
             g1 += "&enciv=" + enciv
@@ -114,11 +121,12 @@ class PlaceholderHub:
                 'ck' : ck
             }
             
-            response = session.post(login_url, allow_redirects = False, data = login_payload, timeout = 10, headers = header)
-            if resp.status == 299:
-                auth_succesfull = True
-            else:
-                auth_succesfull = False
+            async with session.post(login_api, allow_redirects = False, data = login_payload, timeout = 10, headers = header) as resp:
+                if resp.status == 299:
+                    auth_succesfull = True
+                else:
+                    auth_succesfull = False
+        
         await session.close()
 
         return auth_succesfull
@@ -136,8 +144,10 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     # await hass.async_add_executor_job(
     #     your_validate_func, data["username"], data["password"]
     # )
-    print(data)
-    hub = PlaceholderHub(data['host'])
+    _LOGGER.debug("Validate input:")
+    _LOGGER.debug(data)
+    # print(data)
+    hub = NokiaConfigFlowHandler(data['host'])
 
     if not await hub.authenticate(data['username'], data['password']):
         raise InvalidAuth
