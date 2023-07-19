@@ -1,12 +1,19 @@
 {
     "domain": "nokiaxs2426gb",
-    "name": "nokiaxs2426gb",
-    "documentation": "https://github.com/mversluijs/nokiaxs2426gb",
-    "config_flow": false,
+    "name": "Nokia XS2426GB Router",
+    "documentation": "https://github.com/mversluijs/homeassistant_nokiaxs2426gb_devicetracker",
+    "config_flow": true,
     "version": "1.0.1",
+    "iot_class": "local_polling",
     "requirements": [],
     "dependencies": [],
     "codeowners": [
         "@mversluijs"
-    ]
+        ],
+    "ssdp": [
+        {
+          "manufacturer": "Nokia",
+          "deviceType": "urn:schemas-upnp-org:device:InternetGatewayDevice:1"
+        }
+      ]
 }
