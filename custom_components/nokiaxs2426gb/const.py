@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from homeassistant.const import Platform
 
-DOMAIN = "nokiarouter"
+DOMAIN = "nokiaxs2426gb"
 
 PLATFORMS = [
     # Platform.BUTTON,
