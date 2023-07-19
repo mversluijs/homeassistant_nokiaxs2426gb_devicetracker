@@ -143,7 +143,8 @@ class Nokia(object):
             'ct' : ct,
             'ck' : ck
         }
-        _LOGGER.debug('login_payload:' + login_payload)
+        _LOGGER.debug('ct:' + ct)
+        _LOGGER.debug('ck:' + ck)
         # STEP 2: Authentication
         response = client.post(login_url, allow_redirects = False, data = login_payload, timeout = 10, headers = header)
 
