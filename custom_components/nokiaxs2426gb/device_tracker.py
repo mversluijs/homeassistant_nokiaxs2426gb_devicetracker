@@ -69,7 +69,6 @@ class NokiaScannerEntity(NokiaBaseEntity, ScannerEntity):
         """Update the Nokia device."""
         self._device = self._router.devices[self._mac]
         self._active = self._device["active"]
-        # self._icon = DEVICE_ICONS.get(self._device["device_type"], "mdi:help-network")
 
     @property
     def is_connected(self) -> bool:
@@ -96,7 +95,9 @@ class NokiaScannerEntity(NokiaBaseEntity, ScannerEntity):
         """Return the hostname."""
         return self._hostname
 
-    # @property
-    # def icon(self) -> str:
-    #     """Return the icon."""
-    #     return self._icon
+    @property
+    def icon(self) -> str:
+        """Return device icon."""
+        if self.is_connected:
+            return "mdi:lan-connect"
+        return "mdi:lan-disconnect"
