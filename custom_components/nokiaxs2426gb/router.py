@@ -185,7 +185,7 @@ class NokiaRouter:
 
         for device in self.devices.values():
             device["active"] = now - device["last_seen"] <= self._consider_home
-            _LOGGER.debug(device["mac"] + ' active? ' + now - device["last_seen"])
+            _LOGGER.debug(device["mac"] + ' active? ' + device["active"])
             _LOGGER.debug('consider home: ' + self._consider_home)
 
         if new_device:
