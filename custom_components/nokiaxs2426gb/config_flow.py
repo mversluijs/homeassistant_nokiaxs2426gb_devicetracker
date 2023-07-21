@@ -157,7 +157,7 @@ class NokiaFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 get_api, password, host, username
             )
         except CannotLoginException:
-            errors["base"] = "config"
+            errors["base"] = "Unable to authenticate."
 
         if errors:
             return await self._show_setup_form(user_input, errors)

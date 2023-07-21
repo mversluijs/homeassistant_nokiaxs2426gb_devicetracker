@@ -83,8 +83,8 @@ class Nokia(object):
         login_nonce_api = c.LOGIN_NONCE_API
         login_api = c.LOGIN_API
 
-        login_nonce_url = base_url+login_nonce_api
-        login_url = base_url+login_api
+        login_nonce_url = base_url + login_nonce_api
+        login_url = base_url + login_api
 
         
         login_nonce_payload = "userName=" + self.username
@@ -143,12 +143,9 @@ class Nokia(object):
             'ct' : ct,
             'ck' : ck
         }
-        _LOGGER.debug('ct:' + ct)
-        _LOGGER.debug('ck:' + ck)
-        # STEP 2: Authentication
-        response = client.post(login_url, allow_redirects = False, data = login_payload, timeout = 10, headers = header)
 
-        
+        # STEP 2: Authentication
+        response = client.post(login_url, allow_redirects = False, data = login_payload, timeout = 10, headers = header)      
             
         if response.status_code == 299:
             self.cookie = 'succes'
@@ -184,10 +181,10 @@ class Nokia(object):
         if response.json()['expired'] == 'no':
             _LOGGER.debug('logged in? Yes')
             return True
-
-        _LOGGER.debug('Logged in? No')
-        _LOGGER.debug('response status: {}'.format(response.status_code))
-        _LOGGER.debug('response text: {}'.format(response.text))
+        else: 
+            _LOGGER.debug('Logged in? No')
+            _LOGGER.debug('response status: {}'.format(response.status_code))
+            _LOGGER.debug('response text: {}'.format(response.text))
         return False
 
 
