@@ -71,6 +71,10 @@ class NokiaRouter:
         self.firmware_version = ""
         self.hardware_version = ""
         self.serial_number = ""
+        self.hw_version = ""
+        self.sw_version = ""
+        self.manufacturer = ""
+
 
         self.track_devices = True
         consider_home_int = entry.options.get(
@@ -101,6 +105,9 @@ class NokiaRouter:
         self.hardware_version = self._info.get("HardwareVersion")
         self.serial_number = self._info["SerialNumber"]
         self.mode = self._info.get("DeviceMode", MODE_ROUTER)
+        self.hw_version = self._info.get("HardwareVersion")
+        self.sw_version = self._info.get("Softwareversion")
+        self.manufacturer = self._info.get("Vendor")
 
         enabled_entries = [
             entry
