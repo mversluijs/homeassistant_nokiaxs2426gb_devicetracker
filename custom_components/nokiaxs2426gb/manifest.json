@@ -3,7 +3,7 @@
     "name": "Nokia XS2426GB Router",
     "documentation": "https://github.com/mversluijs/homeassistant_nokiaxs2426gb_devicetracker",
     "config_flow": true,
-    "version": "1.1.0",
+    "version": "1.1.1",
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/mversluijs/homeassistant_nokiaxs2426gb_devicetracker/issues",
     "requirements": [],
