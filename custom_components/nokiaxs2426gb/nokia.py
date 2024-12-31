@@ -262,20 +262,25 @@ class Nokia(object):
         
         result = response.json()
         
-        # start with an empty list, we will add all the devices we see
-        last_results = []
-        if result['device_cfg']:
+
+        if result['device_cfg'] and result['alias_cfg']:
             _LOGGER.info('Got {} devices'.format(len(result['device_cfg'])))
-            for line in result['device_cfg']:
+            device_cfg = result.get("device_cfg", [])
+            alias_cfg = result.get("alias_cfg", [])
+
+            # Maak een mapping van MACAddress naar HostName uit alias_cfg
+            mac_to_hostname = {entry["MACAddress"].lower(): entry.get("HostName", "") for entry in alias_cfg}
+            # start with an empty list, we will add all the devices we see
+            last_results = []
+
+            for device in device_cfg:
+                _LOGGER.debug(device)
                 # Only active devices
-                if line['Active'] == 1:
-                    name = line['HostName']
-                    ip = line['IPAddress']
-                    mac = line['MACAddress']
-
-                    _LOGGER.debug(line)
-
-                    last_results.append(Device(mac.upper(), name, ip))
+                if device['Active'] == 1:
+                    mac_address = device.get("MACAddress", "").upper()
+                    hostname  = mac_to_hostname.get(mac_address.lower(), "Unknown")
+                    ip_address = device.get("IPAddress", "Unknown")
+                    last_results.append(Device(mac_address, hostname, ip_address))
 
             # replace the last results list, any devices that left will eventually report "not_home"
             self.last_results = last_results
