@@ -103,7 +103,7 @@ class NokiaRouter:
         self.model = self._info.get("ModelName")
         self.firmware_version = self._info.get("SoftwareVersion")
         self.hardware_version = self._info.get("HardwareVersion")
-        self.serial_number = self._info["SerialNumber"]
+        self.serial_number = self._info.get("SerialNumber", self.unique_id)
         self.mode = self._info.get("DeviceMode", MODE_ROUTER)
         self.hw_version = self._info.get("HardwareVersion")
         self.sw_version = self._info.get("SoftwareVersion")
