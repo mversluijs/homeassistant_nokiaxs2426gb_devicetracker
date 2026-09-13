@@ -58,6 +58,7 @@ class Nokia(object):
         self.username = user
         self.password = password
         self.url = url
+        self.last_results = []
         self.host = host
 
         self.cookie = None
@@ -256,26 +257,54 @@ class Nokia(object):
             'Content-Type' : 'text/html'
         }
                 
-        response = client.get(lan_status_url, allow_redirects = False, timeout = 10, headers = header)
-        _LOGGER.debug('GET {}'.format(lan_status_url))
-        _LOGGER.debug('response status: {}'.format(response.status_code))
-        
-        result = response.json()
-        
-        # start with an empty list, we will add all the devices we see
-        last_results = []
-        if result['device_cfg']:
-            _LOGGER.info('Got {} devices'.format(len(result['device_cfg'])))
-            for line in result['device_cfg']:
+        try:
+            response = client.get(lan_status_url, allow_redirects = False, timeout = 10, headers = header)
+        except requests.RequestException as err:
+            _LOGGER.warning("Request to %s failed: %s", lan_status_url, err)
+            return None
+
+        _LOGGER.debug('GET %s', lan_status_url)
+        _LOGGER.debug('response status: %s', response.status_code)
+
+        if not response.ok:
+            _LOGGER.warning(
+                "Router returned status %s for %s", response.status_code, lan_status_url
+            )
+            return None
+
+        try:
+            result = response.json()
+        except ValueError:
+            _LOGGER.warning("Router returned a non-JSON response for %s", lan_status_url)
+            return None
+
+        device_cfg = result.get("device_cfg") or []
+        alias_cfg = result.get("alias_cfg") or []
+
+        if device_cfg:
+            _LOGGER.debug('Got %s devices', len(device_cfg))
+
+            # Maak een mapping van MACAddress naar HostName uit alias_cfg
+            mac_to_hostname = {
+                entry["MACAddress"].lower(): entry.get("HostName", "")
+                for entry in alias_cfg
+                if entry.get("MACAddress")
+            }
+            # start with an empty list, we will add all the devices we see
+            last_results = []
+
+            for device in device_cfg:
+                _LOGGER.debug(device)
                 # Only active devices
-                if line['Active'] == 1:
-                    name = line['HostName']
-                    ip = line['IPAddress']
-                    mac = line['MACAddress']
-
-                    _LOGGER.debug(line)
-
-                    last_results.append(Device(mac.upper(), name, ip))
+                if device.get('Active') == 1:
+                    mac_address = device.get("MACAddress", "").upper()
+                    hostname = (
+                        mac_to_hostname.get(mac_address.lower())
+                        or device.get("HostName")
+                        or "Unknown"
+                    )
+                    ip_address = device.get("IPAddress", "Unknown")
+                    last_results.append(Device(mac_address, hostname, ip_address))
 
             # replace the last results list, any devices that left will eventually report "not_home"
             self.last_results = last_results

@@ -1,19 +1,33 @@
 {
     "config": {
-        "abort": {
-            "already_configured": "Device is already configured"
+        "step": {
+            "user": {
+                "description": "Default host: {host}\nDefault username: {username}",
+                "data": {
+                    "host": "Hostname or IP address of the router (optional)",
+                    "username": "Username (optional)",
+                    "password": "Password"
+                }
+            }
         },
         "error": {
+            "config": "Connection or login error: please check your configuration",
             "cannot_connect": "Failed to connect",
             "invalid_auth": "Invalid authentication",
             "unknown": "Unexpected error"
         },
+        "abort": {
+            "already_configured": "Device is already configured",
+            "not_ipv4_address": "No IPv4 address in ssdp discovery information",
+            "no_serial": "No serial number in ssdp discovery information"
+        }
+    },
+    "options": {
         "step": {
-            "user": {
+            "init": {
+                "description": "Specify optional settings",
                 "data": {
-                    "host": "Hostname or ip address router",
-                    "username": "Username",
-                    "password": "Password"
+                    "consider_home": "Consider home time (seconds)"
                 }
             }
         }

@@ -9,7 +9,6 @@ from .const_nokia import DEFAULT_HOST, DEFAULT_USER
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.components import ssdp
 from homeassistant.const import (
     CONF_HOST,
     CONF_PASSWORD,
@@ -17,6 +16,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers.service_info.ssdp import ATTR_UPNP_SERIAL, SsdpServiceInfo
 from homeassistant.util.network import is_ipv4_address
 
 from .const import (
@@ -51,10 +51,6 @@ def _ordered_shared_schema(schema_input):
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Options for the component."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Init object."""
-        self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
         """Manage the options."""
@@ -94,7 +90,7 @@ class NokiaFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         config_entry: config_entries.ConfigEntry,
     ) -> OptionsFlowHandler:
         """Get the options flow."""
-        return OptionsFlowHandler(config_entry)
+        return OptionsFlowHandler()
 
     async def _show_setup_form(self, user_input=None, errors=None):
         """Show the setup form to the user."""
@@ -113,7 +109,7 @@ class NokiaFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             description_placeholders=self.placeholders,
         )
 
-    async def async_step_ssdp(self, discovery_info: ssdp.SsdpServiceInfo) -> FlowResult:
+    async def async_step_ssdp(self, discovery_info: SsdpServiceInfo) -> FlowResult:
         """Initialize flow from ssdp."""
         updated_data: dict[str, str | int | bool] = {}
 
@@ -127,10 +123,10 @@ class NokiaFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         _LOGGER.debug("Nokia ssdp discovery info: %s", discovery_info)
 
-        if ssdp.ATTR_UPNP_SERIAL not in discovery_info.upnp:
+        if ATTR_UPNP_SERIAL not in discovery_info.upnp:
             return self.async_abort(reason="no_serial")
 
-        await self.async_set_unique_id(discovery_info.upnp[ssdp.ATTR_UPNP_SERIAL])
+        await self.async_set_unique_id(discovery_info.upnp[ATTR_UPNP_SERIAL])
         self._abort_if_unique_id_configured(updates=updated_data)
 
         self.placeholders.update(updated_data)
@@ -157,7 +153,7 @@ class NokiaFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 get_api, password, host, username
             )
         except CannotLoginException:
-            errors["base"] = "Unable to authenticate."
+            errors["base"] = "config"
 
         if errors:
             return await self._show_setup_form(user_input, errors)
